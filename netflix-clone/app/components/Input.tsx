@@ -1,7 +1,7 @@
 
 interface InputProps {
     id: string;
-    onChange: unknown;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     value: string;
     label: string;
     type?: string;
@@ -19,7 +19,7 @@ const Input: React.FC<InputProps> = ({
     return(
      <div className="relative">
         <input 
-        onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
+        onChange={onChange}
         value={value}
         type={type}
         id={id}

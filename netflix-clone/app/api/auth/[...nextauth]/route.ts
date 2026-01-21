@@ -1,7 +1,7 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
     providers: [
         Credentials({
            id: 'credentials',
@@ -44,10 +44,12 @@ const handler = NextAuth({
             // return user;
             
             // Temporary: Accept any email/password for testing
+            // Email-ден username алу (уақытша, кейін база деректерінен алу керек)
+            const emailName = credentials.email.split('@')[0];
             return {
                 id: '1',
                 email: credentials.email,
-                name: 'User'
+                name: emailName.charAt(0).toUpperCase() + emailName.slice(1)
             };
         },
         })
@@ -60,8 +62,28 @@ const handler = NextAuth({
     session: {
         strategy: 'jwt',
     },
+    callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.name = user.name;
+                token.email = user.email;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (token && session.user) {
+                session.user.id = token.id as string;
+                session.user.name = token.name as string;
+                session.user.email = token.email as string;
+            }
+            return session;
+        },
+    },
     secret: process.env.NEXTAUTH_SECRET,
-})
+};
 
-export { handler as GET, handler as POST }
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };
 

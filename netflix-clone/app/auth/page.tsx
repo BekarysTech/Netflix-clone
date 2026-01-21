@@ -5,6 +5,8 @@ import { useState, useCallback } from 'react';
 import axios from 'axios';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation'
+import { FcGoogle } from 'react-icons/fc'
+import { FaGithub } from 'react-icons/fa'
 
 const Auth = () => {
    const router = useRouter();
@@ -16,6 +18,28 @@ const Auth = () => {
    const toggleVariant = useCallback(() => {
     setVariant((currentVariant) => currentVariant === 'login' ? 'register' : 'login');
    },[])
+
+   const login = useCallback(async() => {
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+      
+      if (result?.error) {
+        console.log('Login error:', result.error);
+        return;
+      } 
+      
+      if (result?.ok) {
+        router.push('/');
+        router.refresh();
+      }
+    } catch (error: any) {
+      console.log('Login error:', error);
+    }
+   }, [email, password, router])
    
    const register = useCallback(async() => {
       try {
@@ -26,35 +50,26 @@ const Auth = () => {
         });
         
         if (response.status === 200) {
-          setVariant('login');
-          setEmail('');
-          setPassword('');
-          setUsername('');
+          // Тіркелгеннен кейін автоматикалық кіру
+          const result = await signIn('credentials', {
+            email,
+            password,
+            redirect: false,
+          });
+          
+          if (result?.ok) {
+            setVariant('login');
+            setEmail('');
+            setPassword('');
+            setUsername('');
+            router.push('/');
+            router.refresh();
+          }
         }
       }catch (error: any) {
         console.log('Register error:', error);
       }
-   }, [email, username, password])
- 
-   const login = useCallback(async() => {
-      try {
-        const result = await signIn('credentials', {
-          email,
-          password,
-          redirect: false,
-        });
-        
-        if (result?.error) {
-          console.log('Login error:', result.error);
-        } else if (result?.ok) {
-          window.location.href = '/';
-        }
-      } catch (error: any) {
-        console.log('Login error:', error);
-      }
-
-      router.push('/');
-   }, [email, password, router])
+   }, [email, username, password, router])
 
     return(
       <div className="relative w-full h-screen bg-black">
@@ -98,6 +113,15 @@ const Auth = () => {
                 <button onClick={variant === 'login' ? login : register} className='bg-red-600 text-white py-3 text-sm font-medium w-full rounded-md hover:bg-red-700 mt-6'>
                   {variant === 'login' ? 'login' : 'Sign up'}
                 </button>
+
+                <div className='flex flex-row items-center justify-center gap-4 mt-6'>
+                  <div className='w-10 h-10 bg-white rounded-full flex items-center justify-center'>
+                    <FcGoogle size={20} />
+                  </div>
+                  <div className='w-10 h-10 bg-white text-black rounded-full flex items-center justify-center'>
+                    <FaGithub size={20} />
+                  </div>
+                </div>
 
                 <p className='text-neutral-500 mt-12 pl-4'>
                  {variant === 'login' ? 'First time using Netflix?' : 'Already have an account'}
